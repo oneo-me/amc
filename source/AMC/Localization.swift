@@ -56,17 +56,7 @@ final class LocalizationController: ObservableObject {
 enum L10n {
   static let languagePreferenceKey = "language.preference"
 
-  static let bundle: Bundle = {
-    if let resourceURL = Bundle.main.resourceURL,
-      let appBundle = Bundle(
-        url: resourceURL.appendingPathComponent("AMC_AMC.bundle")
-      )
-    {
-      return appBundle
-    }
-
-    return Bundle.module
-  }()
+  static let bundle = Bundle.main
 
   static func string(_ key: String, _ arguments: CVarArg...) -> String {
     string(key, language: preferredLanguage(), arguments: arguments)
