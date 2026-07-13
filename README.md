@@ -41,3 +41,6 @@ macOS 的隐私授权会绑定到应用身份，临时 SwiftPM 可执行文件�
 macOS 没有公开的 Mission Control 窗口选择 API。本程序只使用公开的事件监听、事件发送和
 `NSWorkspace` API，窗口布局、选择顺序以及 Mission Control 内的键盘导航行为仍由当前 macOS
 版本决定。若系统无法启动 Mission Control，程序会回退发送系统默认的 `Control + Up Arrow`。
+
+Mission Control 动画控制、Reduce Motion 实测以及 Raycast Window Management 的逆向结论见
+[Mission Control 动画控制研究](Docs/MissionControlAnimationResearch.md)。
