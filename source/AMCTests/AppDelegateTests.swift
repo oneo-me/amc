@@ -15,6 +15,8 @@ final class AppDelegateTests: XCTestCase {
       defer: false
     )
     delegate.installMainWindow(window)
+    XCTAssertEqual(window.level, .floating)
+
     window.orderFront(nil)
     _ = app.setActivationPolicy(.regular)
 

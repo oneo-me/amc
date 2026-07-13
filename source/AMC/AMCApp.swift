@@ -282,6 +282,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     window.delegate = self
     window.identifier = NSUserInterfaceItemIdentifier("AMCMainWindow")
     window.isReleasedWhenClosed = false
+    window.level = .floating
   }
 
   private func showMainWindow() {
