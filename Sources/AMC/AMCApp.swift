@@ -11,7 +11,7 @@ struct AMCApp: App {
         .environmentObject(appDelegate.runtime)
         .environmentObject(appDelegate.localization)
     }
-    .defaultSize(width: 560, height: 500)
+    .defaultSize(width: 500, height: 340)
     .windowResizability(.contentSize)
   }
 }
@@ -21,126 +21,9 @@ private struct MainWindow: View {
   @EnvironmentObject private var localization: LocalizationController
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 22) {
-      HStack(spacing: 16) {
-        Image(systemName: "rectangle.3.group.fill")
-          .font(.system(size: 34, weight: .semibold))
-          .foregroundStyle(.tint)
-          .frame(width: 58, height: 58)
-          .background(.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
-
-        VStack(alignment: .leading, spacing: 4) {
-          Text(localization.string("app.full_name"))
-            .font(.title2.weight(.semibold))
-          Text(localization.string("app.subtitle"))
-            .foregroundStyle(.secondary)
-        }
-      }
-
-      GroupBox {
-        VStack(alignment: .leading, spacing: 14) {
-          Label {
-            VStack(alignment: .leading, spacing: 2) {
-              Text(statusTitle)
-                .fontWeight(.medium)
-              Text(statusDetail)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
-          } icon: {
-            Image(systemName: statusIcon)
-              .foregroundStyle(statusColor)
-          }
-
-          Divider()
-
-          PermissionRow(
-            title: localization.string("permission.accessibility"),
-            isGranted: runtime.accessibilityGranted,
-            requestPermission: runtime.requestAccessibilityPermission,
-            openSettings: runtime.openAccessibilitySettings
-          )
-
-          PermissionRow(
-            title: localization.string("permission.input_monitoring"),
-            isGranted: runtime.inputMonitoringGranted,
-            requestPermission: runtime.requestInputMonitoringPermission,
-            openSettings: runtime.openInputMonitoringSettings
-          )
-
-          if let lastErrorKey = runtime.lastErrorKey {
-            Divider()
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-              Text(localization.string(lastErrorKey))
-                .font(.caption)
-                .foregroundStyle(.red)
-                .fixedSize(horizontal: false, vertical: true)
-              Spacer(minLength: 8)
-              Button(localization.string("action.retry")) {
-                runtime.restartCapture()
-              }
-            }
-          }
-        }
-        .padding(6)
-      } label: {
-        Text(localization.string("status.section"))
-          .font(.headline)
-      }
-
-      GroupBox {
-        VStack(alignment: .leading, spacing: 10) {
-          Toggle(
-            localization.string("login.launch_at_login"),
-            isOn: Binding(
-              get: { runtime.isLaunchAtLoginEnabled },
-              set: { runtime.setLaunchAtLoginEnabled($0) }
-            )
-          )
-          .toggleStyle(.switch)
-
-          Divider()
-
-          HStack {
-            Text(localization.string("language.label"))
-            Spacer()
-            Picker("", selection: $localization.language) {
-              ForEach(AppLanguage.allCases) { language in
-                Text(localization.title(for: language))
-                  .tag(language)
-              }
-            }
-            .labelsHidden()
-            .pickerStyle(.menu)
-            .frame(minWidth: 150)
-          }
-
-          if runtime.launchAtLoginNeedsApproval {
-            HStack(alignment: .firstTextBaseline) {
-              Text(localization.string("login.needs_approval"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-              Spacer()
-              Button(localization.string("action.open_system_settings")) {
-                runtime.openLoginItemsSettings()
-              }
-            }
-          }
-
-          if let errorDescription = runtime.launchAtLoginErrorDescription {
-            Text(
-              localization.string("error.launch_at_login", errorDescription)
-            )
-            .font(.caption)
-            .foregroundStyle(.red)
-            .fixedSize(horizontal: false, vertical: true)
-          }
-        }
-        .padding(6)
-      } label: {
-        Text(localization.string("general.section"))
-          .font(.headline)
-      }
+    VStack(alignment: .leading, spacing: 16) {
+      settingsBar
+      statusPanel
 
       HStack {
         Text(localization.string("window.background_hint"))
@@ -153,16 +36,153 @@ private struct MainWindow: View {
         .keyboardShortcut("q")
       }
     }
-    .padding(24)
-    .frame(width: 560)
+    .padding(20)
+    .frame(width: 500)
     .background(
       MainWindowInstaller(title: localization.string("app.full_name"))
     )
   }
 
+  private var settingsBar: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack(spacing: 20) {
+        HStack(spacing: 8) {
+          Text(localization.string("language.label"))
+            .foregroundStyle(.secondary)
+
+          Picker("", selection: $localization.language) {
+            ForEach(AppLanguage.allCases) { language in
+              Text(localization.title(for: language))
+                .tag(language)
+            }
+          }
+          .labelsHidden()
+          .pickerStyle(.menu)
+          .frame(width: 124)
+          .accessibilityLabel(localization.string("language.label"))
+        }
+
+        Spacer(minLength: 8)
+
+        Toggle(
+          localization.string("login.launch_at_login"),
+          isOn: Binding(
+            get: { runtime.isLaunchAtLoginEnabled },
+            set: { runtime.setLaunchAtLoginEnabled($0) }
+          )
+        )
+        .toggleStyle(.switch)
+      }
+
+      if runtime.launchAtLoginNeedsApproval {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+          Text(localization.string("login.needs_approval"))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+          Spacer(minLength: 8)
+          Button(localization.string("action.open_settings_short")) {
+            runtime.openLoginItemsSettings()
+          }
+          .controlSize(.small)
+        }
+      }
+
+      if let errorDescription = runtime.launchAtLoginErrorDescription {
+        Text(localization.string("error.launch_at_login", errorDescription))
+          .font(.caption)
+          .foregroundStyle(.red)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+    }
+  }
+
+  private var statusPanel: some View {
+    VStack(alignment: .leading, spacing: 14) {
+      HStack(spacing: 12) {
+        Image(systemName: statusIcon)
+          .font(.system(size: 20, weight: .semibold))
+          .foregroundStyle(statusColor)
+          .frame(width: 38, height: 38)
+          .background(statusColor.opacity(0.13), in: Circle())
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(statusTitle)
+            .font(.title3.weight(.semibold))
+          Text(statusDetail)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+      }
+
+      Divider()
+
+      HStack(spacing: 12) {
+        Text("⌘ Tab")
+          .font(.system(.callout, design: .rounded).weight(.semibold))
+          .padding(.horizontal, 10)
+          .padding(.vertical, 6)
+          .background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(localization.string("instruction.primary"))
+            .fontWeight(.medium)
+          Text(localization.string("instruction.reverse"))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+      }
+
+      if !hasAllPermissions {
+        Divider()
+
+        VStack(spacing: 10) {
+          PermissionRow(
+            title: localization.string("permission.accessibility"),
+            isGranted: runtime.accessibilityGranted,
+            openSettings: runtime.openAccessibilitySettings
+          )
+
+          PermissionRow(
+            title: localization.string("permission.input_monitoring"),
+            isGranted: runtime.inputMonitoringGranted,
+            openSettings: runtime.openInputMonitoringSettings
+          )
+        }
+      }
+
+      if hasAllPermissions,
+        !runtime.isCapturing,
+        let lastErrorKey = runtime.lastErrorKey
+      {
+        Text(localization.string(lastErrorKey))
+          .font(.caption)
+          .foregroundStyle(.red)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+    }
+    .padding(16)
+    .background(
+      Color(nsColor: .controlBackgroundColor),
+      in: RoundedRectangle(cornerRadius: 12)
+    )
+    .overlay {
+      RoundedRectangle(cornerRadius: 12)
+        .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+    }
+  }
+
+  private var hasAllPermissions: Bool {
+    runtime.accessibilityGranted && runtime.inputMonitoringGranted
+  }
+
   private var statusTitle: String {
     if runtime.isCapturing {
       return localization.string("status.running")
+    }
+    if hasAllPermissions {
+      return localization.string("status.enabling")
     }
     return localization.string("status.waiting_for_permissions")
   }
@@ -170,6 +190,9 @@ private struct MainWindow: View {
   private var statusDetail: String {
     if runtime.isCapturing {
       return localization.string("status.command_tab_active")
+    }
+    if hasAllPermissions {
+      return localization.string("status.enabling_hint")
     }
     return localization.string("status.permission_hint")
   }
@@ -188,7 +211,6 @@ private struct PermissionRow: View {
 
   let title: String
   let isGranted: Bool
-  let requestPermission: () -> Void
   let openSettings: () -> Void
 
   var body: some View {
@@ -204,13 +226,10 @@ private struct PermissionRow: View {
           .foregroundStyle(.secondary)
       } else {
         Button(
-          localization.string("permission.request"),
-          action: requestPermission
-        )
-        Button(
-          localization.string("action.open_system_settings"),
+          localization.string("action.open_settings_short"),
           action: openSettings
         )
+        .controlSize(.small)
       }
     }
   }

@@ -1,27 +1,27 @@
 "app.full_name" = "Alt Mission Control";
-"app.subtitle" = "使用 Command + Tab 在 Mission Control 中逐窗口切换";
 "app.quit_completely" = "彻底退出";
 
-"status.section" = "运行状态";
-"status.running" = "正在后台运行";
-"status.waiting_for_permissions" = "等待系统权限";
-"status.command_tab_active" = "Command + Tab 已接管";
-"status.permission_hint" = "完成下方授权后会自动启用按键监听";
+"status.running" = "运行中";
+"status.waiting_for_permissions" = "等待系统授权";
+"status.enabling" = "正在自动启用";
+"status.command_tab_active" = "Command + Tab 已启用";
+"status.permission_hint" = "前往系统设置完成授权，返回后会自动启用";
+"status.enabling_hint" = "无需重新启动，程序会自动重试";
+
+"instruction.primary" = "按住 Command，按 Tab 切换窗口";
+"instruction.reverse" = "同时按住 Shift 可反向切换";
 
 "permission.accessibility" = "辅助功能";
 "permission.input_monitoring" = "输入监控";
 "permission.granted" = "已授权";
-"permission.request" = "请求授权";
 
-"action.retry" = "重新启用";
-"action.open_system_settings" = "打开系统设置";
+"action.open_settings_short" = "前往设置";
 
-"general.section" = "通用";
 "language.label" = "语言";
 "language.system" = "跟随系统";
 "login.launch_at_login" = "登录时自动启动";
 "login.needs_approval" = "需要在系统设置的“登录项”中允许本程序在后台运行。";
-"window.background_hint" = "关闭窗口后程序会继续运行并从 Dock 隐藏；再次打开应用即可显示此窗口。";
+"window.background_hint" = "关闭窗口后仍会在后台运行";
 
 "error.launch_at_login" = "无法更新登录项：%@";
 "error.global_keyboard_monitor" = "无法创建全局按键监听。请授予“辅助功能”和“输入监控”权限。";

@@ -1,27 +1,27 @@
 "app.full_name" = "Alt Mission Control";
-"app.subtitle" = "Switch windows in Mission Control with Command + Tab";
 "app.quit_completely" = "Quit Completely";
 
-"status.section" = "Run Status";
-"status.running" = "Running in the Background";
-"status.waiting_for_permissions" = "Waiting for System Permissions";
-"status.command_tab_active" = "Command + Tab is active";
-"status.permission_hint" = "Keyboard monitoring starts automatically after access is granted below";
+"status.running" = "Running";
+"status.waiting_for_permissions" = "Waiting for System Access";
+"status.enabling" = "Enabling Automatically";
+"status.command_tab_active" = "Command + Tab is enabled";
+"status.permission_hint" = "Grant access in System Settings; the app enables itself when you return";
+"status.enabling_hint" = "No restart needed; the app will retry automatically";
+
+"instruction.primary" = "Hold Command and press Tab to switch windows";
+"instruction.reverse" = "Hold Shift as well to switch in reverse";
 
 "permission.accessibility" = "Accessibility";
 "permission.input_monitoring" = "Input Monitoring";
 "permission.granted" = "Granted";
-"permission.request" = "Request Access";
 
-"action.retry" = "Try Again";
-"action.open_system_settings" = "Open System Settings";
+"action.open_settings_short" = "Open Settings";
 
-"general.section" = "General";
 "language.label" = "Language";
 "language.system" = "System Default";
 "login.launch_at_login" = "Launch at Login";
 "login.needs_approval" = "Allow this app to run in the background under Login Items in System Settings.";
-"window.background_hint" = "Closing this window keeps Alt Mission Control running and hides it from the Dock. Open the app again to show this window.";
+"window.background_hint" = "Closing this window keeps the app running";
 
 "error.launch_at_login" = "Unable to update the login item: %@";
 "error.global_keyboard_monitor" = "Unable to create the global keyboard monitor. Grant Accessibility and Input Monitoring access.";

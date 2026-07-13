@@ -79,15 +79,6 @@ final class RuntimeController: ObservableObject {
     openPrivacySettings(pane: "Privacy_ListenEvent")
   }
 
-  func restartCapture() {
-    interceptor?.stop()
-    interceptor = nil
-    isCapturing = false
-    cancelCurrentSwitchIfNeeded()
-    refreshPermissionState()
-    startCapture()
-  }
-
   func setLaunchAtLoginEnabled(_ isEnabled: Bool) {
     launchAtLoginErrorDescription = nil
 

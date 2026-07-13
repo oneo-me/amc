@@ -8,27 +8,27 @@ final class LocalizationTests: XCTestCase {
     let simplifiedChinese = try localizedBundle(named: "zh-Hans")
 
     XCTAssertEqual(
-      english.localizedString(forKey: "general.section", value: nil, table: nil),
-      "General"
+      english.localizedString(forKey: "status.running", value: nil, table: nil),
+      "Running"
     )
     XCTAssertEqual(
       simplifiedChinese.localizedString(
-        forKey: "general.section",
+        forKey: "instruction.primary",
         value: nil,
         table: nil
       ),
-      "通用"
+      "按住 Command，按 Tab 切换窗口"
     )
   }
 
   func testLanguageCanBeSelectedWithoutChangingSystemPreferences() {
     XCTAssertEqual(
-      L10n.string("general.section", language: .english),
-      "General"
+      L10n.string("status.running", language: .english),
+      "Running"
     )
     XCTAssertEqual(
-      L10n.string("general.section", language: .simplifiedChinese),
-      "通用"
+      L10n.string("status.running", language: .simplifiedChinese),
+      "运行中"
     )
     XCTAssertEqual(
       L10n.string("app.quit_completely", language: .simplifiedChinese),
@@ -51,7 +51,7 @@ final class LocalizationTests: XCTestCase {
       LocalizationController(defaults: defaults).language,
       .simplifiedChinese
     )
-    XCTAssertEqual(controller.string("general.section"), "通用")
+    XCTAssertEqual(controller.string("language.label"), "语言")
   }
 
   private func localizedBundle(named localization: String) throws -> Bundle {
