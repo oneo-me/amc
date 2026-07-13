@@ -7,7 +7,7 @@ struct AMCApp: App {
 
   var body: some Scene {
     Window(L10n.string("app.full_name"), id: "main") {
-      MainWindow()
+      MainWindow(appDelegate: appDelegate)
         .environmentObject(appDelegate.runtime)
         .environmentObject(appDelegate.localization)
     }
@@ -17,6 +17,8 @@ struct AMCApp: App {
 }
 
 private struct MainWindow: View {
+  let appDelegate: AppDelegate
+
   @EnvironmentObject private var runtime: RuntimeController
   @EnvironmentObject private var localization: LocalizationController
 
@@ -39,7 +41,10 @@ private struct MainWindow: View {
     .padding(20)
     .frame(width: 500)
     .background(
-      MainWindowInstaller(title: localization.string("app.full_name"))
+      MainWindowInstaller(
+        appDelegate: appDelegate,
+        title: localization.string("app.full_name")
+      )
     )
   }
 
@@ -269,7 +274,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
   func windowShouldClose(_ sender: NSWindow) -> Bool {
     sender.orderOut(nil)
-    NSApplication.shared.setActivationPolicy(.accessory)
+    hideDockIconWhenMainWindowIsHidden()
     return false
   }
 
@@ -278,11 +283,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   }
 
   func installMainWindow(_ window: NSWindow) {
+    if let mainWindow {
+      NotificationCenter.default.removeObserver(
+        self,
+        name: NSWindow.willCloseNotification,
+        object: mainWindow
+      )
+    }
+
     mainWindow = window
     window.delegate = self
     window.identifier = NSUserInterfaceItemIdentifier("AMCMainWindow")
     window.isReleasedWhenClosed = false
     window.level = .floating
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(mainWindowWillClose(_:)),
+      name: NSWindow.willCloseNotification,
+      object: window
+    )
+  }
+
+  @objc private func mainWindowWillClose(_ notification: Notification) {
+    hideDockIconWhenMainWindowIsHidden()
+  }
+
+  private func hideDockIconWhenMainWindowIsHidden() {
+    NSApplication.shared.setActivationPolicy(.accessory)
+
+    DispatchQueue.main.async { [weak self] in
+      guard self?.mainWindow?.isVisible == false else { return }
+      NSApplication.shared.setActivationPolicy(.accessory)
+    }
   }
 
   private func showMainWindow() {
@@ -294,22 +327,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 }
 
 private struct MainWindowInstaller: NSViewRepresentable {
+  let appDelegate: AppDelegate
   let title: String
 
   func makeNSView(context: Context) -> NSView {
     let view = MainWindowReferenceView()
+    view.appDelegate = appDelegate
     view.title = title
     return view
   }
 
   func updateNSView(_ nsView: NSView, context: Context) {
     guard let referenceView = nsView as? MainWindowReferenceView else { return }
+    referenceView.appDelegate = appDelegate
     referenceView.title = title
     referenceView.window?.title = title
   }
 }
 
 private final class MainWindowReferenceView: NSView {
+  weak var appDelegate: AppDelegate?
   var title = ""
 
   override func viewDidMoveToWindow() {
@@ -318,7 +355,7 @@ private final class MainWindowReferenceView: NSView {
 
     Task { @MainActor in
       window.title = title
-      (NSApplication.shared.delegate as? AppDelegate)?.installMainWindow(window)
+      appDelegate?.installMainWindow(window)
     }
   }
 }
