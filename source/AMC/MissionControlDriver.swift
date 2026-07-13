@@ -2,6 +2,17 @@ import AppKit
 import CoreGraphics
 import Foundation
 
+struct WindowSwitchingScope {
+  let displayBounds: CGRect
+
+  func containsHoverPoint(_ point: CGPoint) -> Bool {
+    point.x >= displayBounds.minX
+      && point.x < displayBounds.maxX
+      && point.y >= displayBounds.minY
+      && point.y < displayBounds.maxY
+  }
+}
+
 final class MissionControlDriver: @unchecked Sendable {
   static let syntheticEventTag: Int64 = 0x414D_4301
 
@@ -22,6 +33,7 @@ final class MissionControlDriver: @unchecked Sendable {
   private var originalPointerLocation: CGPoint?
   private var focusedWindowID: CGWindowID?
   private var excludedProcessIdentifiers: Set<pid_t> = []
+  private var switchingScope: WindowSwitchingScope?
   private var hoverTargets: [HoverTarget] = []
   private var selectedTargetIndex: Int?
 
@@ -29,10 +41,12 @@ final class MissionControlDriver: @unchecked Sendable {
   /// fallback for systems where the launcher cannot be found.
   @MainActor
   func enterMissionControl() {
+    let pointerLocation = CGEvent(source: nil)?.location
     prepareHoverSession(
-      pointerLocation: CGEvent(source: nil)?.location,
+      pointerLocation: pointerLocation,
       focusedWindowID: Self.copyFrontmostWindowID(),
-      excludedProcessIdentifiers: Self.systemOverlayProcessIdentifiers()
+      excludedProcessIdentifiers: Self.systemOverlayProcessIdentifiers(),
+      switchingScope: pointerLocation.flatMap(Self.copySwitchingScope)
     )
 
     let applicationURL = URL(
@@ -85,13 +99,15 @@ final class MissionControlDriver: @unchecked Sendable {
   private func prepareHoverSession(
     pointerLocation: CGPoint?,
     focusedWindowID: CGWindowID?,
-    excludedProcessIdentifiers: Set<pid_t>
+    excludedProcessIdentifiers: Set<pid_t>,
+    switchingScope: WindowSwitchingScope?
   ) {
     eventQueue.async { [weak self] in
       guard let self else { return }
       self.originalPointerLocation = pointerLocation
       self.focusedWindowID = focusedWindowID
       self.excludedProcessIdentifiers = excludedProcessIdentifiers
+      self.switchingScope = switchingScope
       self.hoverTargets = []
       self.selectedTargetIndex = nil
     }
@@ -172,6 +188,7 @@ final class MissionControlDriver: @unchecked Sendable {
     originalPointerLocation = nil
     focusedWindowID = nil
     excludedProcessIdentifiers = []
+    switchingScope = nil
     hoverTargets = []
     selectedTargetIndex = nil
   }
@@ -210,7 +227,10 @@ final class MissionControlDriver: @unchecked Sendable {
         !excludedProcessIdentifiers.contains(processIdentifier),
         ownerName != "WindowManager",
         bounds.width >= 80,
-        bounds.height >= 60
+        bounds.height >= 60,
+        switchingScope?.containsHoverPoint(
+          CGPoint(x: bounds.midX, y: bounds.midY)
+        ) != false
       else { return nil }
 
       return HoverTarget(
@@ -223,6 +243,17 @@ final class MissionControlDriver: @unchecked Sendable {
       }
       return $0.point.x < $1.point.x
     }
+  }
+
+  private static func copySwitchingScope(at point: CGPoint) -> WindowSwitchingScope? {
+    var displayID = CGDirectDisplayID()
+    var displayCount: UInt32 = 0
+    guard
+      CGGetDisplaysWithPoint(point, 1, &displayID, &displayCount) == .success,
+      displayCount > 0
+    else { return nil }
+
+    return WindowSwitchingScope(displayBounds: CGDisplayBounds(displayID))
   }
 
   @MainActor
