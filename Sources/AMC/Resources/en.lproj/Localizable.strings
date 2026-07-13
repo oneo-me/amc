@@ -1,6 +1,6 @@
 "app.full_name" = "Alt Mission Control";
 "app.subtitle" = "Switch windows in Mission Control with Command + Tab";
-"app.quit" = "Quit Alt Mission Control";
+"app.quit_completely" = "Quit Completely";
 
 "status.section" = "Run Status";
 "status.running" = "Running in the Background";
@@ -17,9 +17,11 @@
 "action.open_system_settings" = "Open System Settings";
 
 "general.section" = "General";
+"language.label" = "Language";
+"language.system" = "System Default";
 "login.launch_at_login" = "Launch at Login";
 "login.needs_approval" = "Allow this app to run in the background under Login Items in System Settings.";
-"window.background_hint" = "Alt Mission Control keeps running after this window closes. Click its Dock icon to reopen it.";
+"window.background_hint" = "Closing this window keeps Alt Mission Control running and hides it from the Dock. Open the app again to show this window.";
 
 "error.launch_at_login" = "Unable to update the login item: %@";
 "error.global_keyboard_monitor" = "Unable to create the global keyboard monitor. Grant Accessibility and Input Monitoring access.";

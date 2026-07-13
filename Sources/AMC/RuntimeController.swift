@@ -11,10 +11,10 @@ final class RuntimeController: ObservableObject {
   @Published private(set) var isSwitching = false
   @Published private(set) var accessibilityGranted = false
   @Published private(set) var inputMonitoringGranted = false
-  @Published private(set) var lastError: String?
+  @Published private(set) var lastErrorKey: String?
   @Published private(set) var isLaunchAtLoginEnabled = false
   @Published private(set) var launchAtLoginNeedsApproval = false
-  @Published private(set) var launchAtLoginError: String?
+  @Published private(set) var launchAtLoginErrorDescription: String?
 
   private var stateMachine = ShortcutStateMachine()
   private let driver = MissionControlDriver()
@@ -89,7 +89,7 @@ final class RuntimeController: ObservableObject {
   }
 
   func setLaunchAtLoginEnabled(_ isEnabled: Bool) {
-    launchAtLoginError = nil
+    launchAtLoginErrorDescription = nil
 
     do {
       if isEnabled {
@@ -98,10 +98,7 @@ final class RuntimeController: ObservableObject {
         try SMAppService.mainApp.unregister()
       }
     } catch {
-      launchAtLoginError = L10n.string(
-        "error.launch_at_login",
-        error.localizedDescription
-      )
+      launchAtLoginErrorDescription = error.localizedDescription
     }
 
     refreshLaunchAtLoginState()
@@ -152,14 +149,14 @@ final class RuntimeController: ObservableObject {
     }
 
     guard interceptor.start() else {
-      lastError = L10n.string("error.global_keyboard_monitor")
+      lastErrorKey = "error.global_keyboard_monitor"
       isCapturing = false
       return
     }
 
     self.interceptor = interceptor
     isCapturing = true
-    lastError = nil
+    lastErrorKey = nil
   }
 
   private func handleInterceptorEvent(_ event: ShortcutInterceptor.InterceptorEvent) {
@@ -169,7 +166,7 @@ final class RuntimeController: ObservableObject {
     case .commandReleased:
       apply(stateMachine.handle(.commandReleased))
     case .tapRecovered:
-      lastError = nil
+      lastErrorKey = nil
     }
     isSwitching = stateMachine.isActive
   }

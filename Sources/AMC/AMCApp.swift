@@ -9,7 +9,7 @@ struct AMCApp: App {
     Window(L10n.string("app.full_name"), id: "main") {
       MainWindow()
         .environmentObject(appDelegate.runtime)
-        .background(MainWindowInstaller())
+        .environmentObject(appDelegate.localization)
     }
     .defaultSize(width: 560, height: 500)
     .windowResizability(.contentSize)
@@ -18,6 +18,7 @@ struct AMCApp: App {
 
 private struct MainWindow: View {
   @EnvironmentObject private var runtime: RuntimeController
+  @EnvironmentObject private var localization: LocalizationController
 
   var body: some View {
     VStack(alignment: .leading, spacing: 22) {
@@ -29,9 +30,9 @@ private struct MainWindow: View {
           .background(.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
 
         VStack(alignment: .leading, spacing: 4) {
-          Text(L10n.string("app.full_name"))
+          Text(localization.string("app.full_name"))
             .font(.title2.weight(.semibold))
-          Text(L10n.string("app.subtitle"))
+          Text(localization.string("app.subtitle"))
             .foregroundStyle(.secondary)
         }
       }
@@ -54,28 +55,28 @@ private struct MainWindow: View {
           Divider()
 
           PermissionRow(
-            title: L10n.string("permission.accessibility"),
+            title: localization.string("permission.accessibility"),
             isGranted: runtime.accessibilityGranted,
             requestPermission: runtime.requestAccessibilityPermission,
             openSettings: runtime.openAccessibilitySettings
           )
 
           PermissionRow(
-            title: L10n.string("permission.input_monitoring"),
+            title: localization.string("permission.input_monitoring"),
             isGranted: runtime.inputMonitoringGranted,
             requestPermission: runtime.requestInputMonitoringPermission,
             openSettings: runtime.openInputMonitoringSettings
           )
 
-          if let lastError = runtime.lastError {
+          if let lastErrorKey = runtime.lastErrorKey {
             Divider()
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-              Text(lastError)
+              Text(localization.string(lastErrorKey))
                 .font(.caption)
                 .foregroundStyle(.red)
                 .fixedSize(horizontal: false, vertical: true)
               Spacer(minLength: 8)
-              Button(L10n.string("action.retry")) {
+              Button(localization.string("action.retry")) {
                 runtime.restartCapture()
               }
             }
@@ -83,14 +84,14 @@ private struct MainWindow: View {
         }
         .padding(6)
       } label: {
-        Text(L10n.string("status.section"))
+        Text(localization.string("status.section"))
           .font(.headline)
       }
 
       GroupBox {
         VStack(alignment: .leading, spacing: 10) {
           Toggle(
-            L10n.string("login.launch_at_login"),
+            localization.string("login.launch_at_login"),
             isOn: Binding(
               get: { runtime.isLaunchAtLoginEnabled },
               set: { runtime.setLaunchAtLoginEnabled($0) }
@@ -98,37 +99,55 @@ private struct MainWindow: View {
           )
           .toggleStyle(.switch)
 
+          Divider()
+
+          HStack {
+            Text(localization.string("language.label"))
+            Spacer()
+            Picker("", selection: $localization.language) {
+              ForEach(AppLanguage.allCases) { language in
+                Text(localization.title(for: language))
+                  .tag(language)
+              }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(minWidth: 150)
+          }
+
           if runtime.launchAtLoginNeedsApproval {
             HStack(alignment: .firstTextBaseline) {
-              Text(L10n.string("login.needs_approval"))
+              Text(localization.string("login.needs_approval"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
               Spacer()
-              Button(L10n.string("action.open_system_settings")) {
+              Button(localization.string("action.open_system_settings")) {
                 runtime.openLoginItemsSettings()
               }
             }
           }
 
-          if let error = runtime.launchAtLoginError {
-            Text(error)
-              .font(.caption)
-              .foregroundStyle(.red)
-              .fixedSize(horizontal: false, vertical: true)
+          if let errorDescription = runtime.launchAtLoginErrorDescription {
+            Text(
+              localization.string("error.launch_at_login", errorDescription)
+            )
+            .font(.caption)
+            .foregroundStyle(.red)
+            .fixedSize(horizontal: false, vertical: true)
           }
         }
         .padding(6)
       } label: {
-        Text(L10n.string("general.section"))
+        Text(localization.string("general.section"))
           .font(.headline)
       }
 
       HStack {
-        Text(L10n.string("window.background_hint"))
+        Text(localization.string("window.background_hint"))
           .font(.caption)
           .foregroundStyle(.secondary)
         Spacer(minLength: 16)
-        Button(L10n.string("app.quit"), role: .destructive) {
+        Button(localization.string("app.quit_completely"), role: .destructive) {
           NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
@@ -136,20 +155,23 @@ private struct MainWindow: View {
     }
     .padding(24)
     .frame(width: 560)
+    .background(
+      MainWindowInstaller(title: localization.string("app.full_name"))
+    )
   }
 
   private var statusTitle: String {
     if runtime.isCapturing {
-      return L10n.string("status.running")
+      return localization.string("status.running")
     }
-    return L10n.string("status.waiting_for_permissions")
+    return localization.string("status.waiting_for_permissions")
   }
 
   private var statusDetail: String {
     if runtime.isCapturing {
-      return L10n.string("status.command_tab_active")
+      return localization.string("status.command_tab_active")
     }
-    return L10n.string("status.permission_hint")
+    return localization.string("status.permission_hint")
   }
 
   private var statusIcon: String {
@@ -162,6 +184,8 @@ private struct MainWindow: View {
 }
 
 private struct PermissionRow: View {
+  @EnvironmentObject private var localization: LocalizationController
+
   let title: String
   let isGranted: Bool
   let requestPermission: () -> Void
@@ -175,12 +199,18 @@ private struct PermissionRow: View {
       Spacer()
 
       if isGranted {
-        Text(L10n.string("permission.granted"))
+        Text(localization.string("permission.granted"))
           .font(.caption)
           .foregroundStyle(.secondary)
       } else {
-        Button(L10n.string("permission.request"), action: requestPermission)
-        Button(L10n.string("action.open_system_settings"), action: openSettings)
+        Button(
+          localization.string("permission.request"),
+          action: requestPermission
+        )
+        Button(
+          localization.string("action.open_system_settings"),
+          action: openSettings
+        )
       }
     }
   }
@@ -189,6 +219,7 @@ private struct PermissionRow: View {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   let runtime = RuntimeController()
+  let localization = LocalizationController()
   private weak var mainWindow: NSWindow?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
@@ -219,6 +250,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
   func windowShouldClose(_ sender: NSWindow) -> Bool {
     sender.orderOut(nil)
+    NSApplication.shared.setActivationPolicy(.accessory)
     return false
   }
 
@@ -235,25 +267,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
   private func showMainWindow() {
     guard let mainWindow else { return }
+    NSApplication.shared.setActivationPolicy(.regular)
     NSApplication.shared.activate(ignoringOtherApps: true)
     mainWindow.makeKeyAndOrderFront(nil)
   }
 }
 
 private struct MainWindowInstaller: NSViewRepresentable {
+  let title: String
+
   func makeNSView(context: Context) -> NSView {
-    MainWindowReferenceView()
+    let view = MainWindowReferenceView()
+    view.title = title
+    return view
   }
 
-  func updateNSView(_ nsView: NSView, context: Context) {}
+  func updateNSView(_ nsView: NSView, context: Context) {
+    guard let referenceView = nsView as? MainWindowReferenceView else { return }
+    referenceView.title = title
+    referenceView.window?.title = title
+  }
 }
 
 private final class MainWindowReferenceView: NSView {
+  var title = ""
+
   override func viewDidMoveToWindow() {
     super.viewDidMoveToWindow()
     guard let window else { return }
 
     Task { @MainActor in
+      window.title = title
       (NSApplication.shared.delegate as? AppDelegate)?.installMainWindow(window)
     }
   }
