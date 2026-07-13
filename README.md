@@ -1,7 +1,11 @@
 # Alt Mission Control
 
-一个使用 Swift、SwiftUI 和标准 Swift Package 构建的 macOS 菜单栏程序。它接管
+一个使用 Swift、SwiftUI 和标准 Swift Package 构建的 macOS 程序。它接管
 `Command + Tab`，借助系统 Mission Control 实现接近 Windows `Alt + Tab` 的逐窗口切换体验。
+
+程序启动后会打开主界面并显示在 Dock 中，不创建菜单栏状态图标。关闭主界面只会隐藏窗口，
+快捷键监听会继续在后台运行；点击 Dock 图标可以再次打开主界面。主界面还可配置登录时自动启动
+或彻底退出程序。
 
 ## 行为
 
@@ -24,13 +28,14 @@ open .build/AltMissionControl.app
 
 也可以在开发期间直接执行 `swift run AltMissionControl`，但建议使用 `.app` 包运行：
 macOS 的隐私授权会绑定到应用身份，临时 SwiftPM 可执行文件在重新构建后可能需要重新授权。
+“登录时自动启动”也需要从构建后的 `.app` 包运行才能正常注册。
 
 首次运行时需要在“系统设置 → 隐私与安全性”中授予：
 
 1. **辅助功能**：发送 Mission Control 导航事件，并拦截原始快捷键。
 2. **输入监控**：接收全局键盘事件。
 
-修改权限后如果状态没有自动刷新，可从菜单栏点击“重新启用按键监听”，或重启程序。
+修改权限后如果状态没有自动刷新，可从主界面点击“重新启用”，或重启程序。
 
 程序在 Mission Control 打开后等待 420ms，通过窗口服务器提供的实时边界定位屏幕上的窗口缩略图。
 每次 Tab 会把鼠标移动到下一个缩略图；松开按键后点击当前缩略图完成切换。如果没有找到

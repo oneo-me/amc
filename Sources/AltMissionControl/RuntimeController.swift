@@ -3,6 +3,7 @@ import ApplicationServices
 import Combine
 import CoreGraphics
 import Foundation
+import ServiceManagement
 
 @MainActor
 final class RuntimeController: ObservableObject {
@@ -11,6 +12,9 @@ final class RuntimeController: ObservableObject {
   @Published private(set) var accessibilityGranted = false
   @Published private(set) var inputMonitoringGranted = false
   @Published private(set) var lastError: String?
+  @Published private(set) var isLaunchAtLoginEnabled = false
+  @Published private(set) var launchAtLoginNeedsApproval = false
+  @Published private(set) var launchAtLoginError: String?
 
   private var stateMachine = ShortcutStateMachine()
   private let driver = MissionControlDriver()
@@ -25,6 +29,7 @@ final class RuntimeController: ObservableObject {
 
   func start() {
     refreshPermissionState()
+    refreshLaunchAtLoginState()
     startCapture()
 
     permissionTimer = Timer.scheduledTimer(
@@ -34,6 +39,7 @@ final class RuntimeController: ObservableObject {
       Task { @MainActor in
         guard let self else { return }
         self.refreshPermissionState()
+        self.refreshLaunchAtLoginState()
         if !self.isCapturing {
           self.startCapture()
         }
@@ -82,6 +88,26 @@ final class RuntimeController: ObservableObject {
     startCapture()
   }
 
+  func setLaunchAtLoginEnabled(_ isEnabled: Bool) {
+    launchAtLoginError = nil
+
+    do {
+      if isEnabled {
+        try SMAppService.mainApp.register()
+      } else {
+        try SMAppService.mainApp.unregister()
+      }
+    } catch {
+      launchAtLoginError = "无法更新登录项：\(error.localizedDescription)"
+    }
+
+    refreshLaunchAtLoginState()
+  }
+
+  func openLoginItemsSettings() {
+    SMAppService.openSystemSettingsLoginItems()
+  }
+
   private func openPrivacySettings(pane: String) {
     guard
       let url = URL(
@@ -94,6 +120,23 @@ final class RuntimeController: ObservableObject {
   private func refreshPermissionState() {
     accessibilityGranted = AXIsProcessTrusted() || CGPreflightPostEventAccess()
     inputMonitoringGranted = CGPreflightListenEventAccess()
+  }
+
+  private func refreshLaunchAtLoginState() {
+    switch SMAppService.mainApp.status {
+    case .enabled:
+      isLaunchAtLoginEnabled = true
+      launchAtLoginNeedsApproval = false
+    case .requiresApproval:
+      isLaunchAtLoginEnabled = true
+      launchAtLoginNeedsApproval = true
+    case .notRegistered, .notFound:
+      isLaunchAtLoginEnabled = false
+      launchAtLoginNeedsApproval = false
+    @unknown default:
+      isLaunchAtLoginEnabled = false
+      launchAtLoginNeedsApproval = false
+    }
   }
 
   private func startCapture() {
