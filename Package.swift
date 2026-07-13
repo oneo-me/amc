@@ -3,23 +3,25 @@
 import PackageDescription
 
 let package = Package(
-  name: "AltMissionControl",
+  name: "AMC",
   platforms: [
     .macOS(.v13)
   ],
   products: [
     .executable(
-      name: "AltMissionControl",
-      targets: ["AltMissionControl"]
+      name: "AMC",
+      targets: ["AMC"]
     )
   ],
   targets: [
     .executableTarget(
-      name: "AltMissionControl"
+      name: "AMC",
+      path: "Sources/AMC"
     ),
     .testTarget(
-      name: "AltMissionControlTests",
-      dependencies: ["AltMissionControl"]
+      name: "AMCTests",
+      dependencies: ["AMC"],
+      path: "Tests/AMCTests"
     ),
   ]
 )

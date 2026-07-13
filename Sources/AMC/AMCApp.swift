@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct AltMissionControlApp: App {
+struct AMCApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
   var body: some Scene {
@@ -229,7 +229,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   func installMainWindow(_ window: NSWindow) {
     mainWindow = window
     window.delegate = self
-    window.identifier = NSUserInterfaceItemIdentifier("AltMissionControlMainWindow")
+    window.identifier = NSUserInterfaceItemIdentifier("AMCMainWindow")
     window.isReleasedWhenClosed = false
   }
 

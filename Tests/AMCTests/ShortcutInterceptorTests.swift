@@ -1,7 +1,7 @@
 import CoreGraphics
 import XCTest
 
-@testable import AltMissionControl
+@testable import AMC
 
 final class ShortcutInterceptorTests: XCTestCase {
   func testCommandTabIsSwallowedAndReleaseIsReported() throws {

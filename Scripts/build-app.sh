@@ -3,7 +3,8 @@
 set -euo pipefail
 ROOT_DIR="${0:A:h:h}"
 CONFIGURATION="${CONFIGURATION:-release}"
-APP_NAME="AltMissionControl"
+APP_NAME="AMC"
+BUNDLE_IDENTIFIER="me.oneo.AMC"
 APP_BUNDLE="$ROOT_DIR/.build/$APP_NAME.app"
 
 cd "$ROOT_DIR"
@@ -22,7 +23,7 @@ cp "$ROOT_DIR/Support/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
 
 SIGN_IDENTITY="${CODE_SIGN_IDENTITY:--}"
 codesign --force --sign "$SIGN_IDENTITY" \
-    --identifier dev.oneo.AltMissionControl \
+    --identifier "$BUNDLE_IDENTIFIER" \
     "$APP_BUNDLE"
 
 echo "$APP_BUNDLE"

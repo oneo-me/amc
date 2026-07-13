@@ -1,4 +1,4 @@
-# Alt Mission Control
+# Alt Mission Control (AMC)
 
 一个使用 Swift、SwiftUI 和标准 Swift Package 构建的 macOS 程序。它接管
 `Command + Tab`，借助系统 Mission Control 实现接近 Windows `Alt + Tab` 的逐窗口切换体验。
@@ -23,10 +23,10 @@
 swift test
 chmod +x Scripts/build-app.sh
 Scripts/build-app.sh
-open .build/AltMissionControl.app
+open .build/AMC.app
 ```
 
-也可以在开发期间直接执行 `swift run AltMissionControl`，但建议使用 `.app` 包运行：
+也可以在开发期间直接执行 `swift run AMC`，但建议使用 `.app` 包运行：
 macOS 的隐私授权会绑定到应用身份，临时 SwiftPM 可执行文件在重新构建后可能需要重新授权。
 “登录时自动启动”也需要从构建后的 `.app` 包运行才能正常注册。
 

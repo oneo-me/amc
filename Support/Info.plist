@@ -5,15 +5,15 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>zh_CN</string>
     <key>CFBundleDisplayName</key>
-    <string>Alt Mission Control</string>
+    <string>AMC</string>
     <key>CFBundleExecutable</key>
-    <string>AltMissionControl</string>
+    <string>AMC</string>
     <key>CFBundleIdentifier</key>
-    <string>dev.oneo.AltMissionControl</string>
+    <string>me.oneo.AMC</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Alt Mission Control</string>
+    <string>AMC</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

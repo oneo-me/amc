@@ -16,7 +16,7 @@ final class MissionControlDriver: @unchecked Sendable {
   }
 
   private let eventQueue = DispatchQueue(
-    label: "dev.oneo.AltMissionControl.synthetic-events",
+    label: "me.oneo.AMC.synthetic-events",
     qos: .userInteractive
   )
   private var originalPointerLocation: CGPoint?

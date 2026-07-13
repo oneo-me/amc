@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import AltMissionControl
+@testable import AMC
 
 final class ShortcutStateMachineTests: XCTestCase {
   func testFirstPressEntersThenAutomaticallyMovesOnce() {
