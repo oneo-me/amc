@@ -15,6 +15,8 @@ final class ShortcutInterceptor {
   private var eventTap: CFMachPort?
   private var runLoopSource: CFRunLoopSource?
   private var isHandlingShortcut = false
+  private var isTabPressed = false
+  private var commandWasReleased = false
   private let eventHandler: (InterceptorEvent) -> Void
 
   init(eventHandler: @escaping (InterceptorEvent) -> Void) {
@@ -76,8 +78,7 @@ final class ShortcutInterceptor {
 
   func stop() {
     if isHandlingShortcut {
-      isHandlingShortcut = false
-      eventHandler(.commandReleased)
+      finishShortcut()
     }
 
     if let eventTap {
@@ -116,6 +117,8 @@ final class ShortcutInterceptor {
 
     if type == .keyDown, keyCode == KeyCode.tab, flags.contains(.maskCommand) {
       isHandlingShortcut = true
+      isTabPressed = true
+      commandWasReleased = false
       let direction: SwitchDirection =
         flags.contains(.maskShift)
         ? .backward
@@ -127,6 +130,10 @@ final class ShortcutInterceptor {
     if type == .keyUp, keyCode == KeyCode.tab, isHandlingShortcut {
       // Swallow the matching key-up so the original shortcut never leaks
       // into the frontmost application or native app switcher.
+      isTabPressed = false
+      if commandWasReleased || !flags.contains(.maskCommand) {
+        finishShortcut()
+      }
       return nil
     }
 
@@ -134,11 +141,21 @@ final class ShortcutInterceptor {
       isHandlingShortcut,
       !flags.contains(.maskCommand)
     {
-      isHandlingShortcut = false
-      eventHandler(.commandReleased)
+      commandWasReleased = true
+      if !isTabPressed {
+        finishShortcut()
+      }
     }
 
     return Unmanaged.passUnretained(event)
+  }
+
+  private func finishShortcut() {
+    guard isHandlingShortcut else { return }
+    isHandlingShortcut = false
+    isTabPressed = false
+    commandWasReleased = false
+    eventHandler(.commandReleased)
   }
 }
 

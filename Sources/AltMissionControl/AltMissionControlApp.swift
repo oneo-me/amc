@@ -7,49 +7,54 @@ struct AltMissionControlApp: App {
 
   var body: some Scene {
     MenuBarExtra {
-      menuContent
+      RuntimeMenu()
         .environmentObject(appDelegate.runtime)
     } label: {
-      Image(
-        systemName: appDelegate.runtime.isCapturing
-          ? "rectangle.3.group.fill"
-          : "rectangle.3.group")
-    }
-
-    Settings {
-      SettingsView()
-        .environmentObject(appDelegate.runtime)
+      Image(systemName: "rectangle.3.group.fill")
     }
   }
+}
+
+private struct RuntimeMenu: View {
+  @EnvironmentObject private var runtime: RuntimeController
 
   @ViewBuilder
-  private var menuContent: some View {
-    Toggle("接管 Command + Tab", isOn: menuEnabledBinding)
-    Divider()
-    Button {
-      NSApplication.shared.sendAction(
-        Selector(("showSettingsWindow:")),
-        to: nil,
-        from: nil
-      )
-    } label: {
-      Label("设置…", systemImage: "gearshape")
+  var body: some View {
+    Label(
+      runtime.isCapturing ? "Command + Tab 已接管" : "等待系统权限",
+      systemImage: runtime.isCapturing ? "checkmark.circle.fill" : "exclamationmark.circle"
+    )
+    .disabled(true)
+
+    if !runtime.accessibilityGranted {
+      Button("授予辅助功能权限") {
+        runtime.requestAccessibilityPermission()
+      }
+      Button("打开辅助功能设置") {
+        runtime.openAccessibilitySettings()
+      }
     }
+
+    if !runtime.inputMonitoringGranted {
+      Button("授予输入监控权限") {
+        runtime.requestInputMonitoringPermission()
+      }
+      Button("打开输入监控设置") {
+        runtime.openInputMonitoringSettings()
+      }
+    }
+
+    if runtime.lastError != nil {
+      Button("重新启用按键监听") {
+        runtime.restartCapture()
+      }
+    }
+
+    Divider()
     Button("退出 Alt Mission Control") {
       NSApplication.shared.terminate(nil)
     }
     .keyboardShortcut("q")
-  }
-
-  private var menuEnabledBinding: Binding<Bool> {
-    Binding(
-      get: { appDelegate.runtime.preferences.isEnabled },
-      set: { value in
-        var preferences = appDelegate.runtime.preferences
-        preferences.isEnabled = value
-        appDelegate.runtime.preferences = preferences
-      }
-    )
   }
 }
 

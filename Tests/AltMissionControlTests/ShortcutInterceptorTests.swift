@@ -33,6 +33,43 @@ final class ShortcutInterceptorTests: XCTestCase {
     XCTAssertEqual(received, [.commandTab(.backward)])
   }
 
+  func testRepeatedTabPressesAreReportedWhileCommandStaysDown() throws {
+    var received: [ShortcutInterceptor.InterceptorEvent] = []
+    let interceptor = ShortcutInterceptor { received.append($0) }
+
+    for _ in 0..<3 {
+      let keyDown = try makeKeyEvent(keyCode: 48, keyDown: true, flags: .maskCommand)
+      XCTAssertNil(interceptor.process(type: .keyDown, event: keyDown))
+
+      let keyUp = try makeKeyEvent(keyCode: 48, keyDown: false, flags: .maskCommand)
+      XCTAssertNil(interceptor.process(type: .keyUp, event: keyUp))
+    }
+
+    XCTAssertEqual(
+      received,
+      [.commandTab(.forward), .commandTab(.forward), .commandTab(.forward)]
+    )
+
+    let commandRelease = try makeKeyEvent(keyCode: 55, keyDown: false, flags: [])
+    XCTAssertNotNil(interceptor.process(type: .flagsChanged, event: commandRelease))
+    XCTAssertEqual(received.last, .commandReleased)
+  }
+
+  func testCommitWaitsUntilBothCommandAndTabAreReleased() throws {
+    var received: [ShortcutInterceptor.InterceptorEvent] = []
+    let interceptor = ShortcutInterceptor { received.append($0) }
+    let keyDown = try makeKeyEvent(keyCode: 48, keyDown: true, flags: .maskCommand)
+    XCTAssertNil(interceptor.process(type: .keyDown, event: keyDown))
+
+    let commandRelease = try makeKeyEvent(keyCode: 55, keyDown: false, flags: [])
+    XCTAssertNotNil(interceptor.process(type: .flagsChanged, event: commandRelease))
+    XCTAssertEqual(received, [.commandTab(.forward)])
+
+    let tabRelease = try makeKeyEvent(keyCode: 48, keyDown: false, flags: [])
+    XCTAssertNil(interceptor.process(type: .keyUp, event: tabRelease))
+    XCTAssertEqual(received, [.commandTab(.forward), .commandReleased])
+  }
+
   func testUnrelatedAndSyntheticEventsPassThrough() throws {
     var received: [ShortcutInterceptor.InterceptorEvent] = []
     let interceptor = ShortcutInterceptor { received.append($0) }

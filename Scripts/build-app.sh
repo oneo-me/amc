@@ -1,11 +1,9 @@
 #!/bin/zsh
 
 set -euo pipefail
-
 ROOT_DIR="${0:A:h:h}"
 CONFIGURATION="${CONFIGURATION:-release}"
-AP
-P_NAME="AltMissionControl"
+APP_NAME="AltMissionControl"
 APP_BUNDLE="$ROOT_DIR/.build/$APP_NAME.app"
 
 cd "$ROOT_DIR"

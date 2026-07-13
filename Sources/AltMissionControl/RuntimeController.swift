@@ -12,22 +12,11 @@ final class RuntimeController: ObservableObject {
   @Published private(set) var inputMonitoringGranted = false
   @Published private(set) var lastError: String?
 
-  @Published var preferences: SwitcherPreferences {
-    didSet {
-      preferences.save()
-      applyEnabledPreference()
-    }
-  }
-
   private var stateMachine = ShortcutStateMachine()
   private let driver = MissionControlDriver()
   private var interceptor: ShortcutInterceptor?
   private var missionControlReadyTask: Task<Void, Never>?
   private var permissionTimer: Timer?
-
-  init() {
-    preferences = .load()
-  }
 
   deinit {
     permissionTimer?.invalidate()
@@ -36,9 +25,7 @@ final class RuntimeController: ObservableObject {
 
   func start() {
     refreshPermissionState()
-    if preferences.isEnabled {
-      startCapture()
-    }
+    startCapture()
 
     permissionTimer = Timer.scheduledTimer(
       withTimeInterval: 1.5,
@@ -47,7 +34,7 @@ final class RuntimeController: ObservableObject {
       Task { @MainActor in
         guard let self else { return }
         self.refreshPermissionState()
-        if self.preferences.isEnabled, !self.isCapturing {
+        if !self.isCapturing {
           self.startCapture()
         }
       }
@@ -109,19 +96,8 @@ final class RuntimeController: ObservableObject {
     inputMonitoringGranted = CGPreflightListenEventAccess()
   }
 
-  private func applyEnabledPreference() {
-    if preferences.isEnabled {
-      startCapture()
-    } else {
-      interceptor?.stop()
-      interceptor = nil
-      isCapturing = false
-      cancelCurrentSwitchIfNeeded()
-    }
-  }
-
   private func startCapture() {
-    guard preferences.isEnabled, interceptor == nil else { return }
+    guard interceptor == nil else { return }
 
     let interceptor = ShortcutInterceptor { [weak self] event in
       DispatchQueue.main.async {
@@ -165,15 +141,12 @@ final class RuntimeController: ObservableObject {
       }
     }
 
-    driver.perform(
-      syntheticActions,
-      navigationMethod: preferences.navigationMethod
-    )
+    driver.perform(syntheticActions)
   }
 
   private func scheduleMissionControlReady() {
     missionControlReadyTask?.cancel()
-    let delay = UInt64(preferences.openingDelay * 1_000_000_000)
+    let delay: UInt64 = 420_000_000
     missionControlReadyTask = Task { [weak self] in
       try? await Task.sleep(nanoseconds: delay)
       guard !Task.isCancelled, let self else { return }
