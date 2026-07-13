@@ -1,0 +1,25 @@
+"app.full_name" = "Alt Mission Control";
+"app.subtitle" = "使用 Command + Tab 在 Mission Control 中逐窗口切换";
+"app.quit" = "退出 Alt Mission Control";
+
+"status.section" = "运行状态";
+"status.running" = "正在后台运行";
+"status.waiting_for_permissions" = "等待系统权限";
+"status.command_tab_active" = "Command + Tab 已接管";
+"status.permission_hint" = "完成下方授权后会自动启用按键监听";
+
+"permission.accessibility" = "辅助功能";
+"permission.input_monitoring" = "输入监控";
+"permission.granted" = "已授权";
+"permission.request" = "请求授权";
+
+"action.retry" = "重新启用";
+"action.open_system_settings" = "打开系统设置";
+
+"general.section" = "通用";
+"login.launch_at_login" = "登录时自动启动";
+"login.needs_approval" = "需要在系统设置的“登录项”中允许本程序在后台运行。";
+"window.background_hint" = "关闭此窗口后，程序仍会在后台运行。点击 Dock 图标可重新打开。";
+
+"error.launch_at_login" = "无法更新登录项：%@";
+"error.global_keyboard_monitor" = "无法创建全局按键监听。请授予“辅助功能”和“输入监控”权限。";

@@ -6,7 +6,7 @@ struct AMCApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
   var body: some Scene {
-    Window("Alt Mission Control", id: "main") {
+    Window(L10n.string("app.full_name"), id: "main") {
       MainWindow()
         .environmentObject(appDelegate.runtime)
         .background(MainWindowInstaller())
@@ -29,9 +29,9 @@ private struct MainWindow: View {
           .background(.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
 
         VStack(alignment: .leading, spacing: 4) {
-          Text("Alt Mission Control")
+          Text(L10n.string("app.full_name"))
             .font(.title2.weight(.semibold))
-          Text("使用 Command + Tab 在 Mission Control 中逐窗口切换")
+          Text(L10n.string("app.subtitle"))
             .foregroundStyle(.secondary)
         }
       }
@@ -54,14 +54,14 @@ private struct MainWindow: View {
           Divider()
 
           PermissionRow(
-            title: "辅助功能",
+            title: L10n.string("permission.accessibility"),
             isGranted: runtime.accessibilityGranted,
             requestPermission: runtime.requestAccessibilityPermission,
             openSettings: runtime.openAccessibilitySettings
           )
 
           PermissionRow(
-            title: "输入监控",
+            title: L10n.string("permission.input_monitoring"),
             isGranted: runtime.inputMonitoringGranted,
             requestPermission: runtime.requestInputMonitoringPermission,
             openSettings: runtime.openInputMonitoringSettings
@@ -75,7 +75,7 @@ private struct MainWindow: View {
                 .foregroundStyle(.red)
                 .fixedSize(horizontal: false, vertical: true)
               Spacer(minLength: 8)
-              Button("重新启用") {
+              Button(L10n.string("action.retry")) {
                 runtime.restartCapture()
               }
             }
@@ -83,14 +83,14 @@ private struct MainWindow: View {
         }
         .padding(6)
       } label: {
-        Text("运行状态")
+        Text(L10n.string("status.section"))
           .font(.headline)
       }
 
       GroupBox {
         VStack(alignment: .leading, spacing: 10) {
           Toggle(
-            "登录时自动启动",
+            L10n.string("login.launch_at_login"),
             isOn: Binding(
               get: { runtime.isLaunchAtLoginEnabled },
               set: { runtime.setLaunchAtLoginEnabled($0) }
@@ -100,11 +100,11 @@ private struct MainWindow: View {
 
           if runtime.launchAtLoginNeedsApproval {
             HStack(alignment: .firstTextBaseline) {
-              Text("需要在系统设置的“登录项”中允许本程序在后台运行。")
+              Text(L10n.string("login.needs_approval"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
               Spacer()
-              Button("打开系统设置") {
+              Button(L10n.string("action.open_system_settings")) {
                 runtime.openLoginItemsSettings()
               }
             }
@@ -119,16 +119,16 @@ private struct MainWindow: View {
         }
         .padding(6)
       } label: {
-        Text("通用")
+        Text(L10n.string("general.section"))
           .font(.headline)
       }
 
       HStack {
-        Text("关闭此窗口后，程序仍会在后台运行。点击 Dock 图标可重新打开。")
+        Text(L10n.string("window.background_hint"))
           .font(.caption)
           .foregroundStyle(.secondary)
         Spacer(minLength: 16)
-        Button("退出程序", role: .destructive) {
+        Button(L10n.string("app.quit"), role: .destructive) {
           NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
@@ -140,16 +140,16 @@ private struct MainWindow: View {
 
   private var statusTitle: String {
     if runtime.isCapturing {
-      return "正在后台运行"
+      return L10n.string("status.running")
     }
-    return "等待系统权限"
+    return L10n.string("status.waiting_for_permissions")
   }
 
   private var statusDetail: String {
     if runtime.isCapturing {
-      return "Command + Tab 已接管"
+      return L10n.string("status.command_tab_active")
     }
-    return "完成下方授权后会自动启用按键监听"
+    return L10n.string("status.permission_hint")
   }
 
   private var statusIcon: String {
@@ -175,12 +175,12 @@ private struct PermissionRow: View {
       Spacer()
 
       if isGranted {
-        Text("已授权")
+        Text(L10n.string("permission.granted"))
           .font(.caption)
           .foregroundStyle(.secondary)
       } else {
-        Button("请求授权", action: requestPermission)
-        Button("打开系统设置", action: openSettings)
+        Button(L10n.string("permission.request"), action: requestPermission)
+        Button(L10n.string("action.open_system_settings"), action: openSettings)
       }
     }
   }

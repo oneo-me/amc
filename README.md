@@ -2,6 +2,7 @@
 
 一个使用 Swift、SwiftUI 和标准 Swift Package 构建的 macOS 程序。它接管
 `Command + Tab`，借助系统 Mission Control 实现接近 Windows `Alt + Tab` 的逐窗口切换体验。
+界面支持简体中文和英文，并跟随 macOS 为 AMC 配置的语言自动切换。
 
 程序启动后会打开主界面并显示在 Dock 中，不创建菜单栏状态图标。关闭主界面只会隐藏窗口，
 快捷键监听会继续在后台运行；点击 Dock 图标可以再次打开主界面。主界面还可配置登录时自动启动

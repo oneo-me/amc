@@ -98,7 +98,10 @@ final class RuntimeController: ObservableObject {
         try SMAppService.mainApp.unregister()
       }
     } catch {
-      launchAtLoginError = "无法更新登录项：\(error.localizedDescription)"
+      launchAtLoginError = L10n.string(
+        "error.launch_at_login",
+        error.localizedDescription
+      )
     }
 
     refreshLaunchAtLoginState()
@@ -149,7 +152,7 @@ final class RuntimeController: ObservableObject {
     }
 
     guard interceptor.start() else {
-      lastError = "无法创建全局按键监听。请授予“辅助功能”和“输入监控”权限。"
+      lastError = L10n.string("error.global_keyboard_monitor")
       isCapturing = false
       return
     }

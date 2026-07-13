@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
   name: "AMC",
+  defaultLocalization: "en",
   platforms: [
     .macOS(.v13)
   ],
@@ -16,7 +17,10 @@ let package = Package(
   targets: [
     .executableTarget(
       name: "AMC",
-      path: "Sources/AMC"
+      path: "Sources/AMC",
+      resources: [
+        .process("Resources")
+      ]
     ),
     .testTarget(
       name: "AMCTests",
