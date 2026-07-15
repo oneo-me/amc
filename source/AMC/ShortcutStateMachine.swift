@@ -9,6 +9,7 @@ enum ShortcutInput: Equatable, Sendable {
   case commandTab(SwitchDirection)
   case missionControlReady
   case commandReleased
+  case pointerClicked
   case cancel
 }
 
@@ -77,7 +78,13 @@ struct ShortcutStateMachine: Equatable, Sendable {
       phase = .idle
       return [.cancelSelection]
 
-    case (.idle, .cancel):
+    case (.opening, .pointerClicked), (.navigating, .pointerClicked):
+      // Mission Control receives the real click unchanged. Drop all queued
+      // keyboard work without posting Escape or another activation action.
+      phase = .idle
+      return []
+
+    case (.idle, .cancel), (.idle, .pointerClicked):
       return []
 
     case (.idle, .missionControlReady),

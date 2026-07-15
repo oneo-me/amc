@@ -5,6 +5,7 @@ final class ShortcutInterceptor {
   enum InterceptorEvent: Equatable {
     case commandTab(SwitchDirection)
     case commandReleased
+    case pointerClicked
     case tapRecovered
   }
 
@@ -41,6 +42,7 @@ final class ShortcutInterceptor {
       CGEventType.keyDown,
       .keyUp,
       .flagsChanged,
+      .leftMouseDown,
     ].reduce(CGEventMask(0)) { partialResult, eventType in
       partialResult | (CGEventMask(1) << eventType.rawValue)
     }
@@ -109,6 +111,16 @@ final class ShortcutInterceptor {
     if event.getIntegerValueField(.eventSourceUserData)
       == MissionControlDriver.syntheticEventTag
     {
+      return Unmanaged.passUnretained(event)
+    }
+
+    if type == .leftMouseDown {
+      // Never swallow a real click. End keyboard interception immediately so
+      // the user's click is the final authority on which window becomes active.
+      isHandlingShortcut = false
+      isTabPressed = false
+      commandWasReleased = false
+      eventHandler(.pointerClicked)
       return Unmanaged.passUnretained(event)
     }
 

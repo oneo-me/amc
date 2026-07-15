@@ -9,8 +9,8 @@ final class MissionControlDriverTests: XCTestCase {
       displayBounds: CGRect(x: -1_920, y: 0, width: 1_920, height: 1_080)
     )
 
-    XCTAssertTrue(scope.containsHoverPoint(CGPoint(x: -960, y: 540)))
-    XCTAssertFalse(scope.containsHoverPoint(CGPoint(x: 960, y: 540)))
+    XCTAssertTrue(scope.contains(CGPoint(x: -960, y: 540)))
+    XCTAssertFalse(scope.contains(CGPoint(x: 960, y: 540)))
   }
 
   func testSwitchingScopeUsesHalfOpenDisplayEdges() {
@@ -18,9 +18,9 @@ final class MissionControlDriverTests: XCTestCase {
       displayBounds: CGRect(x: 0, y: -1_080, width: 1_920, height: 1_080)
     )
 
-    XCTAssertTrue(scope.containsHoverPoint(CGPoint(x: 0, y: -1_080)))
-    XCTAssertTrue(scope.containsHoverPoint(CGPoint(x: 1_919, y: -1)))
-    XCTAssertFalse(scope.containsHoverPoint(CGPoint(x: 1_920, y: -1)))
-    XCTAssertFalse(scope.containsHoverPoint(CGPoint(x: 1_919, y: 0)))
+    XCTAssertTrue(scope.contains(CGPoint(x: 0, y: -1_080)))
+    XCTAssertTrue(scope.contains(CGPoint(x: 1_919, y: -1)))
+    XCTAssertFalse(scope.contains(CGPoint(x: 1_920, y: -1)))
+    XCTAssertFalse(scope.contains(CGPoint(x: 1_919, y: 0)))
   }
 }
