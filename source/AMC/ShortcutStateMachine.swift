@@ -9,6 +9,8 @@ enum ShortcutInput: Equatable, Sendable {
   case commandTab(SwitchDirection)
   case missionControlReady
   case commandReleased
+  case pointerMoved
+  case pointerClicked
   case cancel
 }
 
@@ -77,7 +79,14 @@ struct ShortcutStateMachine: Equatable, Sendable {
       phase = .idle
       return [.cancelSelection]
 
-    case (.idle, .cancel):
+    case (.opening, .pointerMoved), (.navigating, .pointerMoved),
+      (.opening, .pointerClicked), (.navigating, .pointerClicked):
+      // Pointer input takes ownership from keyboard navigation. Mission
+      // Control receives it unchanged, without Escape or a synthetic click.
+      phase = .idle
+      return []
+
+    case (.idle, .cancel), (.idle, .pointerMoved), (.idle, .pointerClicked):
       return []
 
     case (.idle, .missionControlReady),

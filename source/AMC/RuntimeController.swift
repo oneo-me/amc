@@ -133,7 +133,13 @@ final class RuntimeController: ObservableObject {
   private func startCapture() {
     guard interceptor == nil else { return }
 
+    let driver = self.driver
     let interceptor = ShortcutInterceptor { [weak self] event in
+      if event == .pointerMoved || event == .pointerClicked {
+        // Invalidate queued synthetic work before macOS receives the pointer
+        // event, so delayed keyboard navigation cannot move it back.
+        driver.interruptForUserPointerInteraction()
+      }
       DispatchQueue.main.async {
         self?.handleInterceptorEvent(event)
       }
@@ -156,6 +162,14 @@ final class RuntimeController: ObservableObject {
       apply(stateMachine.handle(.commandTab(direction)))
     case .commandReleased:
       apply(stateMachine.handle(.commandReleased))
+    case .pointerMoved:
+      missionControlReadyTask?.cancel()
+      missionControlReadyTask = nil
+      apply(stateMachine.handle(.pointerMoved))
+    case .pointerClicked:
+      missionControlReadyTask?.cancel()
+      missionControlReadyTask = nil
+      apply(stateMachine.handle(.pointerClicked))
     case .tapRecovered:
       lastErrorKey = nil
     }

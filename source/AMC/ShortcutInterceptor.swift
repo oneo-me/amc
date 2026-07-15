@@ -5,6 +5,8 @@ final class ShortcutInterceptor {
   enum InterceptorEvent: Equatable {
     case commandTab(SwitchDirection)
     case commandReleased
+    case pointerMoved
+    case pointerClicked
     case tapRecovered
   }
 
@@ -41,6 +43,8 @@ final class ShortcutInterceptor {
       CGEventType.keyDown,
       .keyUp,
       .flagsChanged,
+      .mouseMoved,
+      .leftMouseDown,
     ].reduce(CGEventMask(0)) { partialResult, eventType in
       partialResult | (CGEventMask(1) << eventType.rawValue)
     }
@@ -112,6 +116,23 @@ final class ShortcutInterceptor {
       return Unmanaged.passUnretained(event)
     }
 
+    if type == .mouseMoved, isHandlingShortcut {
+      finishPointerInteraction(with: .pointerMoved)
+      return Unmanaged.passUnretained(event)
+    }
+
+    if type == .leftMouseDown {
+      // Keep the real click untouched so Mission Control can activate the
+      // window under the user's pointer. Report it even just after Command
+      // was released, while a delayed Mission Control commit may still exist.
+      if isHandlingShortcut {
+        finishPointerInteraction(with: .pointerClicked)
+      } else {
+        eventHandler(.pointerClicked)
+      }
+      return Unmanaged.passUnretained(event)
+    }
+
     let flags = event.flags
     let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
 
@@ -148,6 +169,14 @@ final class ShortcutInterceptor {
     }
 
     return Unmanaged.passUnretained(event)
+  }
+
+  private func finishPointerInteraction(with event: InterceptorEvent) {
+    guard isHandlingShortcut else { return }
+    isHandlingShortcut = false
+    isTabPressed = false
+    commandWasReleased = false
+    eventHandler(event)
   }
 
   private func finishShortcut() {
