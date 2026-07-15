@@ -82,23 +82,4 @@ final class ShortcutStateMachineTests: XCTestCase {
     XCTAssertEqual(machine.handle(.cancel), [.cancelSelection])
     XCTAssertEqual(machine.phase, .idle)
   }
-
-  func testClickDuringOpeningDropsQueuedNavigationWithoutSyntheticAction() {
-    var machine = ShortcutStateMachine()
-
-    _ = machine.handle(.commandTab(.forward))
-    XCTAssertEqual(machine.handle(.pointerClicked), [])
-    XCTAssertEqual(machine.phase, .idle)
-    XCTAssertEqual(machine.handle(.missionControlReady), [])
-  }
-
-  func testClickDuringNavigationLeavesSelectionToMissionControl() {
-    var machine = ShortcutStateMachine()
-
-    _ = machine.handle(.commandTab(.forward))
-    _ = machine.handle(.missionControlReady)
-    XCTAssertEqual(machine.handle(.pointerClicked), [])
-    XCTAssertEqual(machine.phase, .idle)
-    XCTAssertEqual(machine.handle(.commandReleased), [])
-  }
 }

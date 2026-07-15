@@ -133,14 +133,7 @@ final class RuntimeController: ObservableObject {
   private func startCapture() {
     guard interceptor == nil else { return }
 
-    let driver = self.driver
     let interceptor = ShortcutInterceptor { [weak self] event in
-      if event == .pointerClicked {
-        // This runs inside the event-tap callback, before macOS delivers the
-        // click. Invalidate pending activation synchronously; UI state follows
-        // on MainActor without delaying the click itself.
-        driver.interruptForUserPointerInteraction()
-      }
       DispatchQueue.main.async {
         self?.handleInterceptorEvent(event)
       }
@@ -163,10 +156,6 @@ final class RuntimeController: ObservableObject {
       apply(stateMachine.handle(.commandTab(direction)))
     case .commandReleased:
       apply(stateMachine.handle(.commandReleased))
-    case .pointerClicked:
-      missionControlReadyTask?.cancel()
-      missionControlReadyTask = nil
-      apply(stateMachine.handle(.pointerClicked))
     case .tapRecovered:
       lastErrorKey = nil
     }
@@ -191,7 +180,7 @@ final class RuntimeController: ObservableObject {
 
   private func scheduleMissionControlReady() {
     missionControlReadyTask?.cancel()
-    let delay: UInt64 = 120_000_000
+    let delay: UInt64 = 420_000_000
     missionControlReadyTask = Task { [weak self] in
       try? await Task.sleep(nanoseconds: delay)
       guard !Task.isCancelled, let self else { return }

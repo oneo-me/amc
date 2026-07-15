@@ -90,50 +90,6 @@ final class ShortcutInterceptorTests: XCTestCase {
     XCTAssertTrue(received.isEmpty)
   }
 
-  func testRealClickPassesThroughAndImmediatelyEndsShortcutHandling() throws {
-    var received: [ShortcutInterceptor.InterceptorEvent] = []
-    let interceptor = ShortcutInterceptor { received.append($0) }
-    let keyDown = try makeKeyEvent(keyCode: 48, keyDown: true, flags: .maskCommand)
-    XCTAssertNil(interceptor.process(type: .keyDown, event: keyDown))
-
-    let click = try XCTUnwrap(
-      CGEvent(
-        mouseEventSource: nil,
-        mouseType: .leftMouseDown,
-        mouseCursorPosition: .zero,
-        mouseButton: .left
-      )
-    )
-    XCTAssertNotNil(interceptor.process(type: .leftMouseDown, event: click))
-    XCTAssertEqual(received, [.commandTab(.forward), .pointerClicked])
-
-    let commandRelease = try makeKeyEvent(keyCode: 55, keyDown: false, flags: [])
-    XCTAssertNotNil(interceptor.process(type: .flagsChanged, event: commandRelease))
-    XCTAssertEqual(received, [.commandTab(.forward), .pointerClicked])
-  }
-
-  func testSyntheticClickDoesNotInterruptShortcut() throws {
-    var received: [ShortcutInterceptor.InterceptorEvent] = []
-    let interceptor = ShortcutInterceptor { received.append($0) }
-    let keyDown = try makeKeyEvent(keyCode: 48, keyDown: true, flags: .maskCommand)
-    XCTAssertNil(interceptor.process(type: .keyDown, event: keyDown))
-
-    let click = try XCTUnwrap(
-      CGEvent(
-        mouseEventSource: nil,
-        mouseType: .leftMouseDown,
-        mouseCursorPosition: .zero,
-        mouseButton: .left
-      )
-    )
-    click.setIntegerValueField(
-      .eventSourceUserData,
-      value: MissionControlDriver.syntheticEventTag
-    )
-    XCTAssertNotNil(interceptor.process(type: .leftMouseDown, event: click))
-    XCTAssertEqual(received, [.commandTab(.forward)])
-  }
-
   private func makeKeyEvent(
     keyCode: CGKeyCode,
     keyDown: Bool,
